@@ -22,22 +22,21 @@ int main()
     if ((connfd = connect(sockfd, (struct sockaddr *)&addr, sizeof(addr))) == 0)
         printf("Connection success\n");
 
-    char *req = "GET / HTTP/1.1\n\n";
-    send(sockfd, req, strlen(req), 0);
-    // memset(recv, 0, 2048);
-    // while ((n = read(sockfd, recev, sizeof(recev))) > 0)
-    // {
-    //     printf("%s\n", recev);
-    //     memset(recv, 0, 2048);
-    // }
-
-    if ((n = recv(sockfd, recev, sizeof(recev), 0)) == -1)
+    char req[1024] = "Hello\n";
+    int i = 5;
+    while (i--)
     {
-        perror("receving error\n");
-        exit(1);
+        fgets(req, 1024, stdin);
+        send(sockfd, req, strlen(req), 0);
+        memset(recev, 0, 2048);
+        if ((n = recv(sockfd, recev, sizeof(recev), 0)) == -1)
+        {
+            perror("receving error\n");
+            exit(1);
+        }
+        // recev[n] = '\0';
+        printf("%s\n", recev);
     }
-    // recev[n] = '\0';
-    printf("%s\n", recev);
 
     close(sockfd);
 

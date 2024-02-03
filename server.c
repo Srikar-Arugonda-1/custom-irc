@@ -7,7 +7,7 @@
 
 int main()
 {
-    int sockfd, acceptfd;
+    int sockfd, acceptfd, n;
     struct sockaddr_in addr;
     char recev[2048];
 
@@ -24,14 +24,29 @@ int main()
 
     acceptfd = accept(sockfd, (struct sockaddr *)NULL, NULL);
 
-    memset(recev, 0, 2048);
-    recv(acceptfd, recev, sizeof(recev), 0);
-    printf("Response:\n%s\n", recev);
-    memset(recev, 0, 2048);
+    // memset(recev, 0, 2048);
+    // recv(acceptfd, recev, sizeof(recev), 0);
+    // printf("Response:\n%s\n", recev);
 
-    snprintf(recev, 2048, "Hello again");
-    send(acceptfd, recev, sizeof(recev), 0);
+    // snprintf(recev, 2048, "Hello again\n");
+    // send(acceptfd, recev, sizeof(recev), 0);
+
+    char req[1024];
+    int i = 5;
+    while (i--)
+    {
+        memset(recev, 0, 2048);
+        if ((n = recv(acceptfd, recev, sizeof(recev), 0)) == -1)
+        {
+            perror("receving error\n");
+            exit(1);
+        }
+        // recev[n] = '\0';
+        printf("%s\n", recev);
+        fgets(req, 1024, stdin);
+        send(acceptfd, req, strlen(req), 0);
+    }
 
     close(acceptfd);
-    // close(sockfd);
+    close(sockfd);
 }
