@@ -4,39 +4,87 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 
-int main()
+#define BUF 2048
+#define NAME_SZ 10
+
+int TCPconnect(char *ip, int port)
 {
-
-    char *ip = "127.0.0.1";
-    char recev[2048];
-    int connfd, sockfd, n;
+    int sockfd;
     struct sockaddr_in addr;
 
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(2000);
+    addr.sin_port = htons(port);
     inet_pton(AF_INET, ip, &addr.sin_addr.s_addr);
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
-    if ((connfd = connect(sockfd, (struct sockaddr *)&addr, sizeof(addr))) == 0)
-        printf("Connection success\n");
+    if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) == 0)
+        return sockfd;
+    else
+        return -1;
+}
 
-    char req[1024] = "Hello\n";
-    int i = 5;
-    while (i--)
+void readMsg(void *sock_)
+{
+    int sockfd = *(int *)sock_;
+    char recev[BUF];
+    int n;
+
+    while (1)
     {
-        fgets(req, 1024, stdin);
-        send(sockfd, req, strlen(req), 0);
-        memset(recev, 0, 2048);
-        if ((n = recv(sockfd, recev, sizeof(recev), 0)) == -1)
+        if ((n = recv(sockfd, recev, sizeof(recev), 0)) != -1)
         {
-            perror("receving error\n");
-            exit(1);
+            // perror("receving error\n");
+            // exit(1);
+            // break;
+            printf("%s\n", recev);
         }
         // recev[n] = '\0';
-        printf("%s\n", recev);
     }
+
+    close(sockfd);
+}
+
+void ReadMsgFromServer(int sockfd)
+{
+    pthread_t tid;
+    int *sock_ = (int *)malloc(sizeof(int));
+    *sock_ = sockfd;
+    pthread_create(&tid, NULL, (void *)readMsg, (void *)sock_);
+}
+
+void sendMsgToServer(int sockfd)
+{
+    char name[NAME_SZ], buf[BUF - NAME_SZ], msg[BUF];
+    printf("NAME>> ");
+    fgets(name, NAME_SZ, stdin);
+
+    while (1)
+    {
+        printf(">> ");
+        fgets(buf, BUF - NAME_SZ, stdin);
+        snprintf(msg, sizeof(msg), "%s:%s", name, buf);
+
+        send(sockfd, msg, strlen(msg), 0);
+    }
+}
+
+int main()
+{
+    char *ip = "127.0.0.1";
+    int sockfd, n;
+    char recev[BUF];
+    sockfd = TCPconnect(ip, 2000);
+    if (sockfd == -1)
+    {
+        perror("Connection error\n");
+        exit(1);
+    }
+
+    ReadMsgFromServer(sockfd);
+    sendMsgToServer(sockfd);
 
     close(sockfd);
 
