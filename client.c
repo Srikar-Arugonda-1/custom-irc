@@ -65,6 +65,11 @@ void sendMsgToServer(int sockfd)
     {
         printf(">> ");
         fgets(buf, BUF - NAME_SZ, stdin);
+        if (strcmp(buf, "exit\n") == 0)
+        {
+            shutdown(sockfd, SHUT_RDWR);
+            break;
+        }
         snprintf(msg, sizeof(msg), "%s:%s", name, buf);
 
         send(sockfd, msg, strlen(msg), 0);

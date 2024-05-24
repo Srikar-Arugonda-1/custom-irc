@@ -30,12 +30,6 @@ int TCPconnect(int port)
         printf("bind successful\n");
 
     return sockfd;
-    // listen(sockfd, MAX_CONN);
-
-    // int acceptfd = accept(sockfd, (struct sockaddr *)NULL, NULL);
-
-    // // close(sockfd);
-    // return acceptfd;
 }
 
 void sendToOthers(int cli_sock, char *recev)
@@ -62,6 +56,10 @@ void handle_conn(void *sock_)
         {
             perror("receving error\n");
             exit(1);
+        }
+        if (n == 0)
+        {
+            break;
         }
         printf("%s\n", recev);
         sendToOthers(cli_sock, recev);
@@ -95,7 +93,8 @@ int main()
     }
 
     // close(acceptfd);
-    close(sockfd);
+    // close(sockfd);
+    shutdown(sockfd, SHUT_RDWR);
 
     return 0;
 }
