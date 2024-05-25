@@ -1,1 +1,7 @@
-trim \n at end of input
+fixed: 
+    trim \n at end of input 
+    message gets trimmed in middle and sent again
+Remaining:
+    Adding colors and deco stuff
+    some commands
+    readme
