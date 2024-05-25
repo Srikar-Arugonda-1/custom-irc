@@ -9,6 +9,8 @@
 #define BUF 2048
 #define NAME_SZ 10
 
+int msg_came = 0;
+
 int TCPconnect(char *ip, int port)
 {
     int sockfd;
@@ -34,14 +36,14 @@ void readMsg(void *sock_)
 
     while (1)
     {
+        memset(recev, 0, BUF);
         if ((n = recv(sockfd, recev, sizeof(recev), 0)) != -1)
         {
-            // perror("receving error\n");
-            // exit(1);
-            // break;
+            msg_came = 1;
+            printf("\r\033[K");
             printf("%s\n", recev);
+            printf("You: ");
         }
-        // recev[n] = '\0';
     }
 
     close(sockfd);
@@ -58,20 +60,21 @@ void ReadMsgFromServer(int sockfd)
 void sendMsgToServer(int sockfd)
 {
     char name[NAME_SZ], buf[BUF - NAME_SZ], msg[BUF];
-    printf("NAME>> ");
+    printf("Name: ");
     fgets(name, NAME_SZ, stdin);
+    name[strlen(name) - 1] = '\0';
 
     while (1)
     {
-        printf(">> ");
+        printf("You: ");
         fgets(buf, BUF - NAME_SZ, stdin);
-        if (strcmp(buf, "exit\n") == 0)
+        buf[strlen(buf) - 1] = '\0';
+        if (strcmp(buf, "/exit") == 0)
         {
             shutdown(sockfd, SHUT_RDWR);
             break;
         }
         snprintf(msg, sizeof(msg), "%s:%s", name, buf);
-
         send(sockfd, msg, strlen(msg), 0);
     }
 }
